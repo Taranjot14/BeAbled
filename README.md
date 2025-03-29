@@ -1,5 +1,5 @@
 # BeAbled
-SignLanguage Recgnition For Zoom
+SignLanguage Recognition For Zoom
 
 # How to Use:
 - Run test1.py
