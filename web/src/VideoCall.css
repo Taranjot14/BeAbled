@@ -1,39 +1,75 @@
 /* src/VideoCall.css */
+
+/* Container styling (same as before) */
 .video-call-container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 1rem;
-    background-color: #f5f5f5;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  }
-  
-  .video-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  
-  .video-box {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .video-box video {
-    width: 100%;
-    max-width: 400px;
-    border-radius: 8px;
-    background-color: #000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  }
-  
-  .header {
-    text-align: center;
-    margin-bottom: 1rem;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #333;
-  }
-  
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  font-family: sans-serif;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.video-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.video-box {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.video-box video {
+  width: 100%;
+  max-width: 400px;
+  border-radius: 8px;
+  background-color: #000;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  margin-top: 0.5rem;
+}
+
+/* Button styling */
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+button.connect-btn,
+button.end-btn {
+  padding: 0.7rem 1.5rem;
+  border: none;
+  border-radius: 5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Connect button style */
+button.connect-btn {
+  background-color: #4CAF50;
+  color: #fff;
+}
+button.connect-btn:hover {
+  background-color: #45a049;
+}
+
+/* End call button style */
+button.end-btn {
+  background-color: #f44336;
+  color: #fff;
+}
+button.end-btn:hover {
+  background-color: #e53935;
+}
