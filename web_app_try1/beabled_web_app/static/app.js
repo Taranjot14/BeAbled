@@ -257,14 +257,26 @@ function updateCameraOffDisplays() {
     localCameraOff.style.display = showLocalOff ? 'flex' : 'none';
     remoteCameraOff.style.display = showRemoteOff ? 'flex' : 'none';
 }
-
 function toggleMic() {
     micEnabled = !micEnabled;
+
+    // Toggle classes for visual feedback
     micBtn.classList.toggle('active', micEnabled);
     micBtn.classList.toggle('disabled', !micEnabled);
-    if (stream) stream.getAudioTracks()[0].enabled = micEnabled;
-    showToast(`Microphone ${micEnabled ? 'enabled' : 'disabled'}`, 'info');
+
+    // Swap icon between mic and mic-mute
+    micBtn.innerHTML = micEnabled
+        ? '<i class="bi bi-mic-fill"></i>'
+        : '<i class="bi bi-mic-mute-fill"></i>';
+
+    // Actually toggle audio track
+    if (stream && stream.getAudioTracks().length > 0) {
+        stream.getAudioTracks()[0].enabled = micEnabled;
+    }
+
+    showToast(`Microphone ${micEnabled ? 'enabled' : 'muted'}`, 'info');
 }
+
 
 function toggleCamera() {
     cameraEnabled = !cameraEnabled;

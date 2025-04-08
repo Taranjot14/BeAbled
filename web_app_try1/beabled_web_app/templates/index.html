@@ -1,386 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BeAbled Video Call</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤟</text></svg>">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>BeAbled Video Call</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🤟</text></svg>">
 
-    <style>
-        :root {
-            --primary: #6a3093;
-            --secondary: #44a7c6;
-            --accent: #f5a623;
-            --bg: #f8f9fa;
-            --text: #2c3e50;
-            --logo-gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-        }
-        
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Segoe UI', sans-serif;
-        }
-        
-        .video-container {
-            position: relative;
-            width: 100%;
-            height: 70vh;
-            background-color: #000;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        
-        #remoteVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+  <style>
+    :root {
+      --primary: #8e44ad;
+      --secondary: #a29bfe;
+      --accent: #f5a623;
+      --bg: #f5f0ff;
+      --text: #2c3e50;
+      --white: #ffffff;
+    }
+    body {
+  background-color: #d6c4eb; /* 🌙 Softer purple */
+  color: #2c3e50;
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
 
-        /* Navbar Styles */
-        .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            background: white;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-        }
+   /* 🎨 Navbar Gradient */
+.navbar {
+  background: linear-gradient(to right, #5e2b97, #9b59b6);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+  padding: 1rem 2rem;
+  color: white;
+}
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+/* Navbar Links & Logo Text */
+.navbar .nav-link {
+  color: white !important;
+  font-weight: 500;
+  text-decoration: none;
+  position: relative;
+}
 
-        .logo-img {
-            height: 40px;
-            transition: transform 0.3s ease;
-        }
+.navbar .nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: #f5a623;
+  transition: 0.3s ease-in-out;
+}
 
-        .logo-img:hover {
-            transform: scale(1.05) rotate(-5deg);
-        }
+.navbar .nav-link:hover::after {
+  width: 100%;
+}
 
-        .logo-text {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: var(--logo-gradient);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            animation: fadeIn 1s ease;
-        }
+.logo-text {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, #ffe29f, #ffa0ae, #a18cd1);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmerText 6s ease-in-out infinite;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* optional: adds soft lift */
+}
 
-        .logo-tagline {
-            font-size: 0.9rem;
-            color: var(--secondary);
-            font-style: italic;
-        }
+.logo-tagline {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: #fceaff;
+}
+  
 
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-        }
+    .video-container {
+      position: relative;
+      width: 100%;
+      height: 70vh;
+      background-color: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      animation: fadeIn 0.6s ease-in-out;
+    }
 
-        .nav-link {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
+    #remoteVideo, #localVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
 
-        .nav-link:hover {
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
+    .self-view {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 250px;
+      height: 140px;
+      background-color: #333;
+      border: 3px solid var(--accent);
+      border-radius: 12px;
+      overflow: hidden;
+      z-index: 10;
+    }
 
-        .nav-link::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: var(--accent);
-            transition: all 0.3s ease;
-        }
+    .control-bar {
+      background-color: var(--white);
+      padding: 1rem 2rem;
+      border-radius: 16px;
+      margin-top: 1.5rem;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    }
 
-        .nav-link:hover::after {
-            width: 100%;
-            left: 0;
-        }
+    .btn-control {
+      background: linear-gradient(145deg, var(--secondary), var(--primary));
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 55px;
+      height: 55px;
+      margin: 0 10px;
+      font-size: 20px;
+      transition: all 0.3s ease;
+    }
 
-        /* Animation Keyframes */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    .btn-control:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
 
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
+    #joinBtn, #roomBtn {
+      padding: 10px 30px;
+      font-weight: bold;
+      border-radius: 30px;
+      min-width: 150px;
+    }
 
-        /* Add this to your existing button styles */
-        .btn-control {
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        }
+    #joinBtn {
+      background: var(--primary);
+      color: white;
+      border: none;
+    }
 
-        .btn-control:hover {
-            transform: scale(1.1) translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
+    #joinBtn:hover {
+      background: var(--secondary);
+    }
 
-        /* Add subtle animation to video container */
-        .video-container {
-            animation: fadeIn 0.8s ease, float 6s ease-in-out infinite;
-        }
-        
-        .self-view {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            width: 240px;
-            height: 135px;
-            background-color: var(--text);
-            border: 3px solid var(--accent);
-            border-radius: 10px;
-            overflow: hidden;
-            z-index: 10;
-        }
-        
-        #localVideo {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .control-bar {
-            background-color: white;
-            padding: 15px 25px;
-            border-radius: 12px;
-            margin-top: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        
-        .btn-control {
-            background-color: transparent;
-            border: none;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            margin: 0 8px;
-            font-size: 22px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-control:hover {
-            transform: scale(1.1);
-            background-color: rgba(106, 48, 147, 0.1);
-        }
-        
-        .btn-control.active {
-            background-color: rgba(106, 48, 147, 0.2);
-            color: var(--primary);
-        }
-        
-        .btn-control.disabled {
-            background-color: rgba(217, 48, 37, 0.1);
-            color: #d93025;
-        }
-        
-        #joinBtn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 8px;
-            font-weight: bold;
-            min-width: 120px;
-            transition: all 0.3s ease;
-        }
-        
-        #joinBtn:hover {
-            background-color: var(--secondary);
-            transform: translateY(-2px);
-        }
-        
-        .caption-display {
-            display: flex !important;
-            position: absolute;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 16px;
-            min-width: 250px;
-            text-align: center;
-            z-index: 100;
-            backdrop-filter: blur(5px);
-        }
-        
-        .camera-off {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #3c4043;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 18px;
-        }
-        
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        
-        .pulse {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-        }
-    </style>
+    .caption-display {
+      position: absolute;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 1rem;
+      backdrop-filter: blur(8px);
+      z-index: 999;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .camera-off {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #3c4043;
+      color: white;
+      font-size: 18px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.07); }
+      100% { transform: scale(1); }
+    }
+  </style>
 </head>
 <body>
-    <!-- Add this navbar at the top of your body -->
-    <nav class="navbar">
-        <div class="logo-container">
-            <img src="myLogo.png" alt="BeAbled Logo" class="logo-img">
-            <div>
-                <div class="logo-text">BeAbled</div>
-                <div class="logo-tagline">Where Hands Speak Louder</div>
-            </div>
-        </div>
-        
-        <div class="nav-links">
-            <a href="#" class="nav-link">Home</a>
-            <a href="#" class="nav-link">Features</a>
-            <a href="#" class="nav-link">About</a>
-            <a href="#" class="nav-link">Contact</a>
-        </div>
-    </nav>
 
-    <div class="container py-4">
-        <div class="video-container">
-            <video id="remoteVideo" autoplay playsinline></video>
-            <div id="remoteCameraOff" class="camera-off">Camera Off</div>
-            
-            <div class="self-view">
-                <video id="localVideo" autoplay playsinline muted></video>
-                <div id="localCameraOff" class="camera-off">Camera Off</div>
-            </div>
-            
-            <div id="captionDisplay" class="caption-display" style="display: none;"></div>
-        </div>
+  <!-- Navbar -->
+  <nav class="navbar d-flex justify-content-between align-items-center">
+    <div class="d-flex align-items-center gap-3">
+      <img src="myLogo.png" alt="BeAbled Logo" height="40" />
+      <div>
+        <div class="logo-text">BeAbled</div>
+        <div class="logo-tagline"><i>Where Hands Speak Louder</i> </div>
+      </div>
+    </div>
+    <div class="nav-links d-flex gap-4">
+      <a href="#" class="nav-link">Home</a>
+      <a href="#" class="nav-link">Features</a>
+      <a href="#" class="nav-link">About</a>
+      <a href="#" class="nav-link">Contact</a>
+    </div>
+  </nav>
 
-        <div class="control-bar">
-            <div class="d-flex justify-content-center">
-                <button id="aslBtn" class="btn-control" title="Toggle ASL Detection">
-                    <i class="bi bi-signpost-split-fill"></i>
-                </button>
-                <button id="micBtn" class="btn-control active" title="Mute">
-                    <i class="bi bi-mic-fill"></i>
-                </button>
-                <button id="camBtn" class="btn-control active" title="Toggle Camera">
-                    <i class="bi bi-camera-video-fill"></i>
-                </button>
-            </div>
-            
-            <div class="text-center mt-3">
-                <button id="joinBtn" class="btn pulse">
-                    <i class="bi bi-camera-video-off-fill me-2"></i>Start Call
-                </button>
-                <button id="roomBtn" class="btn btn-outline-primary ms-3">
-                    <i class="bi bi-people-fill me-2"></i>Room
-                </button>
-            </div>
-        </div>
+  <!-- Main Container -->
+  <div class="container py-4">
+    <div class="video-container">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <div id="remoteCameraOff" class="camera-off">Camera Off</div>
+
+      <div class="self-view">
+        <video id="localVideo" autoplay playsinline muted></video>
+        <div id="localCameraOff" class="camera-off">Camera Off</div>
+      </div>
+
+      <div id="captionDisplay" class="caption-display" style="display: none;"></div>
     </div>
 
-    <!-- Room Modal -->
-    <div class="modal fade" id="roomModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Room Settings</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <button id="createRoomBtn" class="btn btn-primary w-100 mb-3">
-                            <i class="bi bi-plus-circle-fill me-2"></i>Create New Room
-                        </button>
-                        <div class="text-center mb-3">OR</div>
-                        <div class="input-group mb-3">
-                            <input type="text" id="roomIdInput" class="form-control" placeholder="Enter Room ID">
-                            <button id="joinRoomBtn" class="btn btn-primary">
-                                <i class="bi bi-box-arrow-in-right me-2"></i>Join
-                            </button>
-                        </div>
-                    </div>
-                    <div id="roomLinkContainer" class="d-none">
-                        <p>Share this link:</p>
-                        <div class="input-group">
-                            <input type="text" id="roomLink" class="form-control" readonly>
-                            <button id="copyLinkBtn" class="btn btn-outline-secondary">
-                                <i class="bi bi-clipboard"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="control-bar mt-4 text-center">
+      <div class="d-flex justify-content-center mb-3">
+        <button id="aslBtn" class="btn-control" title="Toggle ASL Detection"><i class="bi bi-signpost-split-fill"></i></button>
+        <button id="micBtn" class="btn-control" title="Mute"><i class="bi bi-mic-fill"></i></button>
+        <button id="camBtn" class="btn-control" title="Toggle Camera"><i class="bi bi-camera-video-fill"></i></button>
+      </div>
+      <div>
+        <button id="joinBtn" class="btn pulse"><i class="bi bi-camera-video-off-fill me-2"></i>Start Call</button>
+        <button id="roomBtn" class="btn btn-outline-primary ms-3"><i class="bi bi-people-fill me-2"></i>Room</button>
+      </div>
     </div>
+  </div>
 
-    <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
-    <script>
-        // Add this for more interactive animations
-        document.addEventListener('DOMContentLoaded', () => {
-            // Animate buttons on hover
-            const buttons = document.querySelectorAll('.btn-control, .nav-link');
-            buttons.forEach(btn => {
-                btn.addEventListener('mouseenter', () => {
-                    btn.style.transform = 'scale(1.05) translateY(-3px)';
-                });
-                btn.addEventListener('mouseleave', () => {
-                    btn.style.transform = '';
-                });
-            });
+  <!-- Room Modal -->
+  <div class="modal fade" id="roomModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Room Settings</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <button id="createRoomBtn" class="btn btn-primary w-100 mb-3"><i class="bi bi-plus-circle-fill me-2"></i>Create New Room</button>
+          <div class="text-center mb-3">OR</div>
+          <div class="input-group mb-3">
+            <input type="text" id="roomIdInput" class="form-control" placeholder="Enter Room ID">
+            <button id="joinRoomBtn" class="btn btn-primary"><i class="bi bi-box-arrow-in-right me-2"></i>Join</button>
+          </div>
+          <div id="roomLinkContainer" class="d-none">
+            <p>Share this link:</p>
+            <div class="input-group">
+              <input type="text" id="roomLink" class="form-control" readonly>
+              <button id="copyLinkBtn" class="btn btn-outline-secondary"><i class="bi bi-clipboard"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-            // Logo animation
-            const logo = document.querySelector('.logo-img');
-            logo.addEventListener('click', () => {
-                logo.style.animation = 'none';
-                setTimeout(() => {
-                    logo.style.animation = 'float 1.5s ease';
-                }, 10);
-            });
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
+  <!-- Toasts -->
+  <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
