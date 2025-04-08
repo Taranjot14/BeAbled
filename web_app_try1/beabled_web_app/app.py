@@ -34,8 +34,9 @@ except Exception as e:
 # Initialize MediaPipe Hands
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
+    static_image_mode=True,  # critical for per-frame images
     max_num_hands=1,
-    min_detection_confidence=0.7,
+    min_detection_confidence=0.5,  # slightly lower to allow more detections
     min_tracking_confidence=0.5
 )
 
@@ -52,14 +53,14 @@ def predict():
         data = request.json['image']
         image_data = base64.b64decode(data.split(',')[1])
         frame = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
-        
+
         # ASL Detection
         image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = hands.process(image_rgb)
-        
+
         label = "-"
         confidence = 0.0
-        
+
         if results.multi_hand_landmarks:
             for hand_landmarks in results.multi_hand_landmarks:
                 h, w, _ = frame.shape
@@ -67,31 +68,36 @@ def predict():
                 y_min = int(min([lm.y for lm in hand_landmarks.landmark]) * h)
                 x_max = int(max([lm.x for lm in hand_landmarks.landmark]) * w)
                 y_max = int(max([lm.y for lm in hand_landmarks.landmark]) * h)
-                
+
                 # Add 20% padding
                 x_min = max(0, x_min - int(0.2 * (x_max - x_min)))
                 y_min = max(0, y_min - int(0.2 * (y_max - y_min)))
                 x_max = min(w, x_max + int(0.2 * (x_max - x_min)))
                 y_max = min(h, y_max + int(0.2 * (y_max - y_min)))
-                
+
                 cropped_hand = frame[y_min:y_max, x_min:x_max]
                 if cropped_hand.size == 0:
+                    logger.warning("Detected hand had invalid crop region.")
                     continue
-                
+
                 img = cv2.resize(cropped_hand, (160, 160))
                 img = img / 255.0
                 preds = model.predict(np.expand_dims(img, axis=0), verbose=0)
                 class_idx = np.argmax(preds)
                 confidence = float(preds[0][class_idx])
-                
+
                 if confidence > 0.7 and class_idx in idx_to_class:
                     label = idx_to_class[class_idx]
-        
+
+        else:
+            logger.warning("No hand landmarks detected.")
+
         return jsonify({
             'prediction': label,
             'confidence': f"{confidence:.2f}",
             'status': 'success'
         })
+
     except Exception as e:
         logger.error(f"Prediction error: {e}")
         return jsonify({'status': 'error', 'message': str(e)})
