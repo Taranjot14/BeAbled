@@ -128,7 +128,10 @@ async function startCall() {
         callActive = true;
         updateCameraOffDisplays();
         
-        if (aslEnabled) startASLPrediction();
+        localVideo.onloadeddata = () => {
+            if (aslEnabled) startASLPrediction();
+        };
+        
         if (currentRoom) socket.emit('join_room', { room_id: currentRoom });
         
         showToast('Call started', 'success');
@@ -155,8 +158,7 @@ function endCall() {
     showToast('Call ended', 'info');
 }
 
-// Add debug logging at key points
-
+// ASL Functions
 function toggleASL() {
     console.log("ASL button clicked. Current state:", aslEnabled);
     aslEnabled = !aslEnabled;
@@ -178,39 +180,21 @@ function toggleASL() {
 function startASLPrediction() {
     console.log("Starting ASL prediction");
     
-    // Clear any existing interval
-    if (predictionInterval) {
-        clearInterval(predictionInterval);
-    }
+    if (predictionInterval) clearInterval(predictionInterval);
     
-    // Make sure caption display is visible
     captionDisplay.style.display = "block";
     captionDisplay.textContent = "Detecting gestures...";
-    console.log("Caption display should be visible now");
     
-    // Start new prediction interval
     predictionInterval = setInterval(async () => {
-        if (!callActive || !aslEnabled || !cameraEnabled) {
-            console.log("Skipping prediction - call:", callActive, "ASL:", aslEnabled, "camera:", cameraEnabled);
-            return;
-        }
+        if (!callActive || !aslEnabled || !cameraEnabled) return;
         
         try {
-            console.log("Capturing frame for prediction");
             const canvas = document.createElement('canvas');
             canvas.width = localVideo.videoWidth;
             canvas.height = localVideo.videoHeight;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(localVideo, 0, 0, canvas.width, canvas.height);
             
-            // Debug: Show captured frame (temporary)
-            // document.body.appendChild(canvas);
-            // canvas.style.position = 'absolute';
-            // canvas.style.top = '0';
-            // canvas.style.left = '0';
-            // canvas.style.zIndex = '1000';
-            
-            console.log("Sending prediction request");
             const response = await fetch('/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -218,23 +202,20 @@ function startASLPrediction() {
             });
             
             const data = await response.json();
-            console.log("Received prediction:", data);
-            
             if (data.status === 'success') {
                 const displayText = data.prediction === '-' ? 
                     'No gesture detected' : 
                     `✋ ${data.prediction} (${data.confidence})`;
                 captionDisplay.textContent = displayText;
-                console.log("Updated caption:", displayText);
+                speakText(data.prediction); // 🔊 Voice here
             } else {
-                console.error("Prediction error:", data.message);
                 captionDisplay.textContent = "Detection error";
             }
         } catch (error) {
             console.error("ASL processing error:", error);
             captionDisplay.textContent = "Processing error";
         }
-    }, 1000); // Check every second
+    }, 1000);
 }
 
 function stopASLPrediction() {
@@ -245,6 +226,15 @@ function stopASLPrediction() {
     }
     captionDisplay.style.display = "none";
     captionDisplay.textContent = "";
+}
+
+// 🔊 Speak captions
+function speakText(text) {
+    if (!text || text === '-' || text.includes('No gesture')) return;
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = 'en-US';
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(utter);
 }
 
 // UI Helpers
