@@ -346,38 +346,44 @@ socket.on('hand_raised', (data) => {
     showToast(`${data.userId} ${data.state ? 'raised' : 'lowered'} their hand`, 'info');
 });
 
-// Chat functionality
-const chatInput = document.getElementById('chatInput');
-const sendChatBtn = document.getElementById('sendChatBtn');
-const chatMessages = document.getElementById('chatMessages');
-let unreadCount = 0;
+// Add to your DOM elements
+const chatBtn = document.getElementById("chatBtn");
+const chatModal = new bootstrap.Modal('#chatModal');
 
-sendChatBtn.addEventListener('click', sendMessage);
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
+// Add to your setupEventListeners()
+chatBtn.addEventListener('click', () => {
+    chatModal.show();
+    unreadCount = 0;
+    document.getElementById('unreadCount').textContent = '0';
 });
 
+// Update your chat message handler
+socket.on('chat_message', (data) => {
+    addMessage(data.message, false, data.sender);
+    if (!chatModal._element.classList.contains('show')) {
+        unreadCount++;
+        document.getElementById('unreadCount').textContent = unreadCount;
+        // Add visual notification dot
+        chatBtn.innerHTML = '<i class="bi bi-chat-left-text-fill"></i><span class="chat-notification"></span>';
+        document.querySelector('.chat-notification').style.display = 'block';
+    }
+});
+
+// Update your sendMessage function
 function sendMessage() {
     const message = chatInput.value.trim();
     if (message && currentRoom) {
         socket.emit('chat_message', {
             room: currentRoom,
             message: message,
-            sender: 'You' // Replace with actual username
+            sender: 'You'
         });
         addMessage(message, true);
         chatInput.value = '';
     }
 }
 
-socket.on('chat_message', (data) => {
-    if (!document.querySelector('.chat-container').matches(':hover')) {
-        unreadCount++;
-        document.getElementById('unreadCount').textContent = unreadCount;
-    }
-    addMessage(data.message, false, data.sender);
-});
-
+// Update your addMessage function
 function addMessage(text, isLocal, sender = 'Participant') {
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${isLocal ? 'local' : 'remote'}`;
@@ -385,12 +391,6 @@ function addMessage(text, isLocal, sender = 'Participant') {
     chatMessages.appendChild(messageDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
-
-// Reset unread count when chat is opened
-document.querySelector('.chat-header').addEventListener('click', () => {
-    unreadCount = 0;
-    document.getElementById('unreadCount').textContent = '0';
-});
 
 
 // Recording functionality
