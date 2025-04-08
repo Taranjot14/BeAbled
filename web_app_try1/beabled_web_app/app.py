@@ -137,5 +137,23 @@ def handle_leave_room(data):
             del active_rooms[room_id]
         logger.info(f"Client {request.sid} left room {room_id}")
 
+
+# Add these Socket.IO handlers
+@socketio.on('raise_hand')
+def handle_raise_hand(data):
+    room = data['room']
+    emit('hand_raised', {
+        'userId': request.sid,
+        'state': data['state']
+    }, room=room)
+
+@socketio.on('chat_message')
+def handle_chat_message(data):
+    room = data['room']
+    emit('chat_message', {
+        'message': data['message'],
+        'sender': data.get('sender', 'Anonymous')
+    }, room=room)
+
 if __name__ == "__main__":
     socketio.run(app, debug=True, host='0.0.0.0', port=8080)

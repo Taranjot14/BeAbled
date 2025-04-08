@@ -229,12 +229,27 @@ function stopASLPrediction() {
 }
 
 // 🔊 Speak captions
+let lastSpokenGesture = null;
+let noGestureCount = 0;
+
 function speakText(text) {
-    if (!text || text === '-' || text.includes('No gesture')) return;
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'en-US';
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utter);
+    if (!text || text === '-') {
+        noGestureCount++;
+        if (noGestureCount > 2) {
+            lastSpokenGesture = null; // Reset after continuous no gestures
+        }
+        return;
+    }
+    
+    // Only speak if different from last gesture
+    if (text !== lastSpokenGesture) {
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US';
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+        lastSpokenGesture = text;
+        noGestureCount = 0;
+    }
 }
 
 // UI Helpers
@@ -300,6 +315,144 @@ function showToast(message, type) {
     toastContainer.appendChild(toast);
     setTimeout(() => toast.remove(), 3000);
 }
+
+
+// Add to your existing JS
+let handRaised = false;
+const raiseHandBtn = document.getElementById('raiseHandBtn');
+
+raiseHandBtn.addEventListener('click', toggleRaiseHand);
+
+function toggleRaiseHand() {
+    handRaised = !handRaised;
+    raiseHandBtn.classList.toggle('active', handRaised);
+    
+    // Visual indicator
+    const indicator = document.createElement('div');
+    indicator.className = 'raise-hand-indicator';
+    indicator.innerHTML = '<i class="bi bi-hand-raised-fill"></i> Hand Raised';
+    
+    if (handRaised) {
+        document.body.appendChild(indicator);
+        socket.emit('raise_hand', { room: currentRoom, state: true });
+    } else {
+        document.querySelector('.raise-hand-indicator')?.remove();
+        socket.emit('raise_hand', { room: currentRoom, state: false });
+    }
+}
+
+// Socket.IO handler
+socket.on('hand_raised', (data) => {
+    showToast(`${data.userId} ${data.state ? 'raised' : 'lowered'} their hand`, 'info');
+});
+
+// Chat functionality
+const chatInput = document.getElementById('chatInput');
+const sendChatBtn = document.getElementById('sendChatBtn');
+const chatMessages = document.getElementById('chatMessages');
+let unreadCount = 0;
+
+sendChatBtn.addEventListener('click', sendMessage);
+chatInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+});
+
+function sendMessage() {
+    const message = chatInput.value.trim();
+    if (message && currentRoom) {
+        socket.emit('chat_message', {
+            room: currentRoom,
+            message: message,
+            sender: 'You' // Replace with actual username
+        });
+        addMessage(message, true);
+        chatInput.value = '';
+    }
+}
+
+socket.on('chat_message', (data) => {
+    if (!document.querySelector('.chat-container').matches(':hover')) {
+        unreadCount++;
+        document.getElementById('unreadCount').textContent = unreadCount;
+    }
+    addMessage(data.message, false, data.sender);
+});
+
+function addMessage(text, isLocal, sender = 'Participant') {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${isLocal ? 'local' : 'remote'}`;
+    messageDiv.innerHTML = `<strong>${sender}:</strong> ${text}`;
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// Reset unread count when chat is opened
+document.querySelector('.chat-header').addEventListener('click', () => {
+    unreadCount = 0;
+    document.getElementById('unreadCount').textContent = '0';
+});
+
+
+// Recording functionality
+let mediaRecorder;
+let recordedChunks = [];
+const recordBtn = document.getElementById('recordBtn');
+
+recordBtn.addEventListener('click', toggleRecording);
+
+async function toggleRecording() {
+    if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+        startRecording();
+    } else {
+        stopRecording();
+    }
+}
+
+async function startRecording() {
+    try {
+        recordedChunks = [];
+        const stream = localVideo.srcObject;
+        mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) recordedChunks.push(e.data);
+        };
+        
+        mediaRecorder.onstop = saveRecording;
+        mediaRecorder.start(100); // Collect data every 100ms
+        recordBtn.classList.add('recording');
+        showToast('Recording started', 'info');
+    } catch (error) {
+        showToast(`Recording error: ${error}`, 'danger');
+    }
+}
+
+function stopRecording() {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        recordBtn.classList.remove('recording');
+        showToast('Recording stopped', 'info');
+    }
+}
+
+function saveRecording() {
+    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    a.download = `beabled-recording-${new Date().toISOString()}.webm`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    }, 100);
+}
+
+// CSS for recording state
+
 
 // Cleanup
 window.addEventListener('beforeunload', () => {
