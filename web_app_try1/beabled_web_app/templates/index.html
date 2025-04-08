@@ -7,6 +7,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤟</text></svg>">
+
     <style>
         :root {
             --primary: #6a3093;
@@ -14,6 +16,7 @@
             --accent: #f5a623;
             --bg: #f8f9fa;
             --text: #2c3e50;
+            --logo-gradient: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
         }
         
         body {
@@ -36,6 +39,110 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-img {
+            height: 40px;
+            transition: transform 0.3s ease;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05) rotate(-5deg);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--logo-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: fadeIn 1s ease;
+        }
+
+        .logo-tagline {
+            font-size: 0.9rem;
+            color: var(--secondary);
+            font-style: italic;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-link {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+            left: 0;
+        }
+
+        /* Animation Keyframes */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Add this to your existing button styles */
+        .btn-control {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .btn-control:hover {
+            transform: scale(1.1) translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Add subtle animation to video container */
+        .video-container {
+            animation: fadeIn 0.8s ease, float 6s ease-in-out infinite;
         }
         
         .self-view {
@@ -157,6 +264,24 @@
     </style>
 </head>
 <body>
+    <!-- Add this navbar at the top of your body -->
+    <nav class="navbar">
+        <div class="logo-container">
+            <img src="myLogo.png" alt="BeAbled Logo" class="logo-img">
+            <div>
+                <div class="logo-text">BeAbled</div>
+                <div class="logo-tagline">Where Hands Speak Louder</div>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <a href="#" class="nav-link">Home</a>
+            <a href="#" class="nav-link">Features</a>
+            <a href="#" class="nav-link">About</a>
+            <a href="#" class="nav-link">Contact</a>
+        </div>
+    </nav>
+
     <div class="container py-4">
         <div class="video-container">
             <video id="remoteVideo" autoplay playsinline></video>
@@ -230,7 +355,30 @@
     </div>
 
     <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+    <script>
+        // Add this for more interactive animations
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate buttons on hover
+            const buttons = document.querySelectorAll('.btn-control, .nav-link');
+            buttons.forEach(btn => {
+                btn.addEventListener('mouseenter', () => {
+                    btn.style.transform = 'scale(1.05) translateY(-3px)';
+                });
+                btn.addEventListener('mouseleave', () => {
+                    btn.style.transform = '';
+                });
+            });
 
+            // Logo animation
+            const logo = document.querySelector('.logo-img');
+            logo.addEventListener('click', () => {
+                logo.style.animation = 'none';
+                setTimeout(() => {
+                    logo.style.animation = 'float 1.5s ease';
+                }, 10);
+            });
+        });
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
