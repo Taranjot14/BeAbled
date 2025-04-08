@@ -2,79 +2,236 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BeAbled Video Call</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
-        body { background-color: #202124; color: white; }
+        :root {
+            --primary: #6a3093;
+            --secondary: #44a7c6;
+            --accent: #f5a623;
+            --bg: #f8f9fa;
+            --text: #2c3e50;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
         .video-container {
             position: relative;
             width: 100%;
             height: 70vh;
             background-color: #000;
-            border-radius: 10px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
-        video {
+        
+        #remoteVideo {
             width: 100%;
             height: 100%;
-            border-radius: 10px;
+            object-fit: cover;
         }
+        
         .self-view {
             position: absolute;
             bottom: 20px;
             right: 20px;
             width: 240px;
             height: 135px;
-            background-color: #3c4043;
-            border: 2px solid #4285F4;
-            border-radius: 8px;
+            background-color: var(--text);
+            border: 3px solid var(--accent);
+            border-radius: 10px;
             overflow: hidden;
+            z-index: 10;
         }
+        
+        #localVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
         .control-bar {
             background-color: white;
-            color: #3c4043;
-            padding: 12px;
-            border-top: 1px solid #dadce0;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        .btn-icon {
+        
+        .btn-control {
             background-color: transparent;
             border: none;
-            color: #3c4043;
-            font-size: 24px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            margin: 0 8px;
+            font-size: 22px;
+            transition: all 0.3s ease;
         }
-        .asl-panel {
-            background-color: white;
-            border-radius: 16px;
-            padding: 8px 16px;
-            border: 1px solid #dadce0;
-            color: #3c4043;
-            font-size: 14px;
-            min-width: 200px;
+        
+        .btn-control:hover {
+            transform: scale(1.1);
+            background-color: rgba(106, 48, 147, 0.1);
+        }
+        
+        .btn-control.active {
+            background-color: rgba(106, 48, 147, 0.2);
+            color: var(--primary);
+        }
+        
+        .btn-control.disabled {
+            background-color: rgba(217, 48, 37, 0.1);
+            color: #d93025;
+        }
+        
+        #joinBtn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 8px;
+            font-weight: bold;
+            min-width: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        #joinBtn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .caption-display {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            min-width: 250px;
+            text-align: center;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+        }
+        
+        .camera-off {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #3c4043;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 18px;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
+    <div class="container py-4">
+        <div class="video-container">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <div id="remoteCameraOff" class="camera-off">Camera Off</div>
+            
+            <div class="self-view">
+                <video id="localVideo" autoplay playsinline muted></video>
+                <div id="localCameraOff" class="camera-off">Camera Off</div>
+            </div>
+            
+            <div id="captionDisplay" class="caption-display" style="display: none;"></div>
+        </div>
 
-<div class="container-fluid p-3">
-    <h2 class="text-white mb-3">BeAbled Video Call</h2>
-    <div class="video-container">
-        <video id="mainVideo" autoplay muted></video>
-        <div class="self-view">
-            <video id="selfVideo" autoplay muted></video>
+        <div class="control-bar">
+            <div class="d-flex justify-content-center">
+                <button id="aslBtn" class="btn-control" title="Toggle ASL Detection">
+                    <i class="bi bi-signpost-split-fill"></i>
+                </button>
+                <button id="micBtn" class="btn-control active" title="Mute">
+                    <i class="bi bi-mic-fill"></i>
+                </button>
+                <button id="camBtn" class="btn-control active" title="Toggle Camera">
+                    <i class="bi bi-camera-video-fill"></i>
+                </button>
+            </div>
+            
+            <div class="text-center mt-3">
+                <button id="joinBtn" class="btn pulse">
+                    <i class="bi bi-camera-video-off-fill me-2"></i>Start Call
+                </button>
+                <button id="roomBtn" class="btn btn-outline-primary ms-3">
+                    <i class="bi bi-people-fill me-2"></i>Room
+                </button>
+            </div>
         </div>
     </div>
 
-    <div class="control-bar d-flex justify-content-between align-items-center mt-3 rounded">
-        <div>
-            <button id="aslBtn" class="btn btn-icon" title="Toggle ASL Detection">🤟</button>
-            <button id="micBtn" class="btn btn-icon" title="Mute">🎤</button>
-            <button id="camBtn" class="btn btn-icon" title="Toggle Camera">📷</button>
+    <!-- Room Modal -->
+    <div class="modal fade" id="roomModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Room Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <button id="createRoomBtn" class="btn btn-primary w-100 mb-3">
+                            <i class="bi bi-plus-circle-fill me-2"></i>Create New Room
+                        </button>
+                        <div class="text-center mb-3">OR</div>
+                        <div class="input-group mb-3">
+                            <input type="text" id="roomIdInput" class="form-control" placeholder="Enter Room ID">
+                            <button id="joinRoomBtn" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Join
+                            </button>
+                        </div>
+                    </div>
+                    <div id="roomLinkContainer" class="d-none">
+                        <p>Share this link:</p>
+                        <div class="input-group">
+                            <input type="text" id="roomLink" class="form-control" readonly>
+                            <button id="copyLinkBtn" class="btn btn-outline-secondary">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <button id="joinBtn" class="btn btn-primary px-4">Join</button>
-        <div id="aslPanel" class="asl-panel d-none">ASL detection ready</div>
     </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/static/app.js"></script>
+    <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
