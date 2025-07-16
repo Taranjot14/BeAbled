@@ -2,6 +2,13 @@
 
 BeAbled is an accessibility-focused video communication web app designed to **bridge communication gaps** for the Deaf and Hard of Hearing community. It integrates real-time **ASL gesture detection** with **speech synthesis**, video calling, and room-based interaction — all wrapped in a sleek, modern UI.
 
+
+
+
+https://github.com/user-attachments/assets/0ef17abf-ba9f-471d-97f4-20a286a7e710
+
+
+
 ---
 
 ## 🌟 Features
