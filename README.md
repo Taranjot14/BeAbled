@@ -1,8 +1,15 @@
 # ✋ BeAbled – Where Hands Speak Louder
 
+### 🎉 **Winner of the Google Developer Student Clubs (GDSC) SFU Hackathon** 🎉
 BeAbled is an accessibility-focused video communication web app designed to **bridge communication gaps** for the Deaf and Hard of Hearing community. It integrates real-time **ASL gesture detection** with **speech synthesis**, video calling, and room-based interaction — all wrapped in a sleek, modern UI.
 
-
+## 🤖 Custom AI Model Architecture
+- **Model**: `gesture_mobilenet_advanced2.h5` (**Trained by our team from scratch**)
+- **Labels**: `class_indices.json`  
+- **Foundation**: MobileNet backbone with **self-collected ASL dataset**
+- **Training Process**: Custom CNN model development using our own data collection
+- **Dataset**: Proprietary ASL gesture dataset collected and annotated by our team
+- **Performance**: Real-time inference with high accuracy optimized for our specific use case
 
 
 https://github.com/user-attachments/assets/0ef17abf-ba9f-471d-97f4-20a286a7e710
